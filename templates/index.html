@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Topics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .result, .error {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .error {
+            color: red;
+        }
+        .result ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .result ul li {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trending Topics</h1>
+
+        <button class="btn" id="run-scraper-btn">Click here to run the script</button>
+
+        <div id="message"></div>
+
+        <div id="last-four-results">
+            {% if error %}
+            <div class="error">
+                <h2>Error</h2>
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+            {% if last_four %}
+                <div class="result">
+                    <h2>Last 4 Trending Topics</h2>
+                    <h4>Fetched IP Address: {{last_four[0].ip}}</h4>
+                    <ul>
+                        {% for trend in last_four %}
+                            <li><strong>{{ trend.trend_name }}</strong> - {{ trend.location }} ({{ trend.posts }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <a href="{{ url_for('get_last_four_items') }}">
+                <button class="btn">Click here to run the query again</button>
+            </a>
+        </div>
+
+        <script>
+            document.getElementById("run-scraper-btn").addEventListener("click", function() {
+                this.disabled = true;
+                document.getElementById("message").innerHTML = "Running the scraper... please wait.";
+
+                fetch("/run-scraper", {
+                    method: "POST",
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("message").innerHTML = `<h2>Status: ${data.status}</h2><p>${data.message}</p>`;
+
+                    document.getElementById("run-scraper-btn").disabled = false;
+                })
+                .catch(error => {
+                    document.getElementById("message").innerHTML = `<div class="error">Error: ${error}</div>`;
+                    document.getElementById("run-scraper-btn").disabled = false;
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>
